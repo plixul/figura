@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 
 	"golang.org/x/mobile/app"
@@ -63,14 +62,22 @@ func onStop(glctx gl.Context) {
 }
 
 func onPaint(glctx gl.Context, sz size.Event) {
-	glctx.ClearColor(1, 0, 0, 1)
+	glctx.ClearColor(128, 0, 128, 1)
+	glctx.Clear(gl.COLOR_BUFFER_BIT)
+
 	glctx.UseProgram(program)
+
+	glctx.BindBuffer(gl.ARRAY_BUFFER, buf)
+	glctx.EnableVertexAttribArray(position)
+
+	glctx.DisableVertexAttribArray(position)
+
 	fps.Draw(sz)
 }
 
 func main() {
 
-	fmt.Println("Starting the app")
+	log.Println("Starting the app")
 
 	app.Main(func(a app.App) {
 
@@ -90,6 +97,8 @@ func main() {
 					visible = false
 					onStop(glctx)
 				}
+			case size.Event:
+				sz = e
 			case paint.Event:
 				onPaint(glctx, sz)
 				a.Publish()
