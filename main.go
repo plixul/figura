@@ -5,6 +5,8 @@ import (
 	"image/color"
 	"image/draw"
 	"log"
+	"math/rand"
+	"time"
 
 	"golang.org/x/mobile/app"
 	"golang.org/x/mobile/event/lifecycle"
@@ -30,25 +32,41 @@ func onStop(glctx gl.Context) {
 
 func onPaint(glctx gl.Context, sz size.Event) {
 
-	glctx.ClearColor(250, 250, 250, 1)
+	glctx.ClearColor(236, 240, 241, 1)
 	glctx.Clear(gl.COLOR_BUFFER_BIT)
 
-	height := sz.HeightPt / 6
-	width := sz.WidthPt / 6
+	pt := sz.WidthPt / 8
 
-	m := images.NewImage(int(width.Px(sz.PixelsPerPt)), int(width.Px(sz.PixelsPerPt)))
+	m := images.NewImage(int(pt.Px(sz.PixelsPerPt)), int(pt.Px(sz.PixelsPerPt)))
 
-	draw.Draw(m.RGBA, m.RGBA.Bounds(), &image.Uniform{color.RGBA{248, 90, 96, 1}}, image.Point{}, draw.Src)
+	colors := []color.RGBA{
+		{52, 152, 219, 1},
+		{231, 76, 60, 1},
+		{52, 73, 94, 1},
+		{46, 204, 113, 1},
+	}
 
-	m.Upload()
+	ps := (sz.HeightPt / 2) - (pt * 4)
 
-	m.Draw(
-		sz,
-		geom.Point{0, 0},
-		geom.Point{width, 0},
-		geom.Point{0, height},
-		m.RGBA.Bounds(),
-	)
+	for c := 0; c < 6; c++ {
+
+		for r := 0; r < 8; r++ {
+
+			draw.Draw(m.RGBA, m.RGBA.Bounds(), &image.Uniform{colors[random(0, 4)]}, image.Point{}, draw.Src)
+
+			m.Upload()
+
+			m.Draw(
+				sz,
+				geom.Point{(geom.Pt(c) * pt) + pt, (geom.Pt(r) * pt) + ps},
+				geom.Point{(geom.Pt(c) * pt) + (pt * 2), (geom.Pt(r) * pt) + ps},
+				geom.Point{(geom.Pt(c) * pt) + pt, (geom.Pt(r) * pt) + (pt + ps)},
+				m.RGBA.Bounds(),
+			)
+
+		}
+
+	}
 
 }
 
@@ -90,4 +108,9 @@ func main() {
 
 	})
 
+}
+
+func random(min, max int) int {
+	rand.Seed(time.Now().UTC().UnixNano())
+	return rand.Intn(max-min) + min
 }
