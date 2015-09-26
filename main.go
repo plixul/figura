@@ -18,8 +18,16 @@ import (
 	"golang.org/x/mobile/gl"
 )
 
+type tile struct {
+	color color.Color
+}
+
+type tiles [8]tile
+type grid [6]tiles
+
 var (
 	images *glutil.Images
+	g      grid
 )
 
 func onStart(glctx gl.Context) {
@@ -39,20 +47,13 @@ func onPaint(glctx gl.Context, sz size.Event) {
 
 	m := images.NewImage(int(pt.Px(sz.PixelsPerPt)), int(pt.Px(sz.PixelsPerPt)))
 
-	colors := []color.RGBA{
-		{52, 152, 219, 1},
-		{231, 76, 60, 1},
-		{52, 73, 94, 1},
-		{46, 204, 113, 1},
-	}
-
 	ps := (sz.HeightPt / 2) - (pt * 4)
 
 	for c := 0; c < 6; c++ {
 
 		for r := 0; r < 8; r++ {
 
-			draw.Draw(m.RGBA, m.RGBA.Bounds(), &image.Uniform{colors[random(0, 4)]}, image.Point{}, draw.Src)
+			draw.Draw(m.RGBA, m.RGBA.Bounds(), &image.Uniform{g[c][r].color}, image.Point{}, draw.Src)
 
 			m.Upload()
 
@@ -73,6 +74,23 @@ func onPaint(glctx gl.Context, sz size.Event) {
 func main() {
 
 	log.Println("starting the app")
+
+	colors := []color.RGBA{
+		{52, 152, 219, 1},
+		{231, 76, 60, 1},
+		{52, 73, 94, 1},
+		{46, 204, 113, 1},
+	}
+
+	for c := 0; c < 6; c++ {
+
+		for r := 0; r < 8; r++ {
+
+			g[c][r].color = colors[random(0, 4)]
+
+		}
+
+	}
 
 	app.Main(func(a app.App) {
 
