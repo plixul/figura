@@ -20,7 +20,7 @@ import (
 
 const (
 	columns  = 6
-	rows     = 10
+	rows     = 8
 	tileSize = 60
 )
 
@@ -48,6 +48,9 @@ func onPaint(glctx gl.Context, sz size.Event) {
 	glctx.ClearColor(236, 240, 241, 1)
 	glctx.Clear(gl.COLOR_BUFFER_BIT)
 
+	columnOffset := (sz.WidthPt / 2) - ((geom.Pt(columns) * tileSize) / 2)
+	rowOffset := (sz.HeightPt / 2) - ((geom.Pt(rows) * tileSize) / 2)
+
 	for c := 0; c < columns; c++ {
 
 		for r := 0; r < rows; r++ {
@@ -60,9 +63,9 @@ func onPaint(glctx gl.Context, sz size.Event) {
 
 			m.Draw(
 				sz,
-				geom.Point{geom.Pt(c) * tileSize, geom.Pt(r) * tileSize},
-				geom.Point{(geom.Pt(c) * tileSize) + tileSize, geom.Pt(r) * tileSize},
-				geom.Point{geom.Pt(c) * tileSize, (geom.Pt(r) * tileSize) + tileSize},
+				geom.Point{columnOffset + (geom.Pt(c) * tileSize), rowOffset + (geom.Pt(r) * tileSize)},
+				geom.Point{columnOffset + ((geom.Pt(c) * tileSize) + tileSize), rowOffset + (geom.Pt(r) * tileSize)},
+				geom.Point{columnOffset + (geom.Pt(c) * tileSize), rowOffset + ((geom.Pt(r) * tileSize) + tileSize)},
 				m.RGBA.Bounds(),
 			)
 
