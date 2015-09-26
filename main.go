@@ -36,7 +36,7 @@ func onPaint(glctx gl.Context, sz size.Event) {
 	height := sz.HeightPt / 6
 	width := sz.WidthPt / 6
 
-	m := images.NewImage(int(height.Px(sz.PixelsPerPt)), int(width.Px(sz.PixelsPerPt)))
+	m := images.NewImage(int(width.Px(sz.PixelsPerPt)), int(width.Px(sz.PixelsPerPt)))
 
 	draw.Draw(m.RGBA, m.RGBA.Bounds(), &image.Uniform{color.RGBA{248, 90, 96, 1}}, image.Point{}, draw.Src)
 
