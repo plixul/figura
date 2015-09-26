@@ -22,12 +22,11 @@ type tile struct {
 	color color.Color
 }
 
-type tiles [8]tile
-type grid [6]tiles
+type tiles [48]tile
 
 var (
 	images *glutil.Images
-	g      grid
+	t      tiles
 )
 
 func onStart(glctx gl.Context) {
@@ -47,21 +46,21 @@ func onPaint(glctx gl.Context, sz size.Event) {
 
 	m := images.NewImage(int(pt.Px(sz.PixelsPerPt)), int(pt.Px(sz.PixelsPerPt)))
 
-	ps := (sz.HeightPt / 2) - (pt * 4)
+	ps := (sz.HeightPt / 2) - (pt * 5)
 
-	for c := 0; c < 6; c++ {
+	for c := 1; c <= 6; c++ {
 
-		for r := 0; r < 8; r++ {
+		for r := 1; r <= 8; r++ {
 
-			draw.Draw(m.RGBA, m.RGBA.Bounds(), &image.Uniform{g[c][r].color}, image.Point{}, draw.Src)
+			draw.Draw(m.RGBA, m.RGBA.Bounds(), &image.Uniform{t[(c*r)-1].color}, image.Point{}, draw.Src)
 
 			m.Upload()
 
 			m.Draw(
 				sz,
+				geom.Point{(geom.Pt(c) * pt), (geom.Pt(r) * pt) + ps},
 				geom.Point{(geom.Pt(c) * pt) + pt, (geom.Pt(r) * pt) + ps},
-				geom.Point{(geom.Pt(c) * pt) + (pt * 2), (geom.Pt(r) * pt) + ps},
-				geom.Point{(geom.Pt(c) * pt) + pt, (geom.Pt(r) * pt) + (pt + ps)},
+				geom.Point{(geom.Pt(c) * pt), (geom.Pt(r) * pt) + (pt + ps)},
 				m.RGBA.Bounds(),
 			)
 
@@ -82,11 +81,11 @@ func main() {
 		{46, 204, 113, 1},
 	}
 
-	for c := 0; c < 6; c++ {
+	for c := 1; c <= 6; c++ {
 
-		for r := 0; r < 8; r++ {
+		for r := 1; r <= 8; r++ {
 
-			g[c][r].color = colors[random(0, 4)]
+			t[(c*r - 1)].color = colors[random(0, 4)]
 
 		}
 
