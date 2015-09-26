@@ -18,15 +18,21 @@ import (
 	"golang.org/x/mobile/gl"
 )
 
+const (
+	columns  = 6
+	rows     = 10
+	tileSize = 60
+)
+
 type tile struct {
 	color color.Color
 }
 
-type tiles [48]tile
+type tiles [columns * rows]tile
 
 var (
 	images *glutil.Images
-	t      tiles
+	grid   tiles
 )
 
 func onStart(glctx gl.Context) {
@@ -42,25 +48,21 @@ func onPaint(glctx gl.Context, sz size.Event) {
 	glctx.ClearColor(236, 240, 241, 1)
 	glctx.Clear(gl.COLOR_BUFFER_BIT)
 
-	pt := sz.WidthPt / 8
+	for c := 0; c < columns; c++ {
 
-	m := images.NewImage(int(pt.Px(sz.PixelsPerPt)), int(pt.Px(sz.PixelsPerPt)))
+		for r := 0; r < rows; r++ {
 
-	ps := (sz.HeightPt / 2) - (pt * 5)
+			m := images.NewImage(int(sz.PixelsPerPt*tileSize), int(sz.PixelsPerPt*tileSize))
 
-	for c := 1; c <= 6; c++ {
-
-		for r := 1; r <= 8; r++ {
-
-			draw.Draw(m.RGBA, m.RGBA.Bounds(), &image.Uniform{t[(c*r)-1].color}, image.Point{}, draw.Src)
+			draw.Draw(m.RGBA, m.RGBA.Bounds(), &image.Uniform{grid[((c+1)*(r+1))-1].color}, image.Point{}, draw.Src)
 
 			m.Upload()
 
 			m.Draw(
 				sz,
-				geom.Point{(geom.Pt(c) * pt), (geom.Pt(r) * pt) + ps},
-				geom.Point{(geom.Pt(c) * pt) + pt, (geom.Pt(r) * pt) + ps},
-				geom.Point{(geom.Pt(c) * pt), (geom.Pt(r) * pt) + (pt + ps)},
+				geom.Point{geom.Pt(c) * tileSize, geom.Pt(r) * tileSize},
+				geom.Point{(geom.Pt(c) * tileSize) + tileSize, geom.Pt(r) * tileSize},
+				geom.Point{geom.Pt(c) * tileSize, (geom.Pt(r) * tileSize) + tileSize},
 				m.RGBA.Bounds(),
 			)
 
@@ -81,14 +83,10 @@ func main() {
 		{46, 204, 113, 1},
 	}
 
-	for c := 1; c <= 6; c++ {
-
-		for r := 1; r <= 8; r++ {
-
-			t[(c*r - 1)].color = colors[random(0, 4)]
-
+	for c := 0; c < columns; c++ {
+		for r := 0; r < rows; r++ {
+			grid[((c+1)*(r+1))-1].color = colors[random(0, 4)]
 		}
-
 	}
 
 	app.Main(func(a app.App) {
