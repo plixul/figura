@@ -10,6 +10,7 @@ import (
 	"golang.org/x/mobile/event/lifecycle"
 	"golang.org/x/mobile/event/paint"
 	"golang.org/x/mobile/event/size"
+	"golang.org/x/mobile/event/touch"
 	"golang.org/x/mobile/exp/gl/glutil"
 	"golang.org/x/mobile/geom"
 	"golang.org/x/mobile/gl"
@@ -29,20 +30,23 @@ func onStop(glctx gl.Context) {
 
 func onPaint(glctx gl.Context, sz size.Event) {
 
-	glctx.ClearColor(128, 0, 128, 1)
+	glctx.ClearColor(250, 250, 250, 1)
 	glctx.Clear(gl.COLOR_BUFFER_BIT)
 
-	m := images.NewImage(100, 100)
+	height := sz.HeightPt / 6
+	width := sz.WidthPt / 6
 
-	draw.Draw(m.RGBA, m.RGBA.Bounds(), &image.Uniform{color.RGBA{0, 0, 255, 255}}, image.Point{}, draw.Src)
+	m := images.NewImage(int(height.Px(sz.PixelsPerPt)), int(width.Px(sz.PixelsPerPt)))
+
+	draw.Draw(m.RGBA, m.RGBA.Bounds(), &image.Uniform{color.RGBA{248, 90, 96, 1}}, image.Point{}, draw.Src)
 
 	m.Upload()
 
 	m.Draw(
 		sz,
 		geom.Point{0, 0},
-		geom.Point{100, 0},
-		geom.Point{0, 100},
+		geom.Point{width, 0},
+		geom.Point{0, height},
 		m.RGBA.Bounds(),
 	)
 
@@ -50,7 +54,7 @@ func onPaint(glctx gl.Context, sz size.Event) {
 
 func main() {
 
-	log.Println("Starting the app")
+	log.Println("starting the app")
 
 	app.Main(func(a app.App) {
 
@@ -72,6 +76,8 @@ func main() {
 				}
 			case size.Event:
 				sz = e
+			case touch.Event:
+				log.Println("touch event")
 			case paint.Event:
 				onPaint(glctx, sz)
 				a.Publish()
