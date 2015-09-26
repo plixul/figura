@@ -19,24 +19,60 @@ import (
 )
 
 const (
-	columns  = 6
-	rows     = 8
-	tileSize = 60
+	gridColumnsCount = 6
+	gridrowsCount    = 8
+	tileSize         = 60
 )
 
 type tile struct {
-	color color.Color
+	columnOffset geom.Pt
+	rowOffset    geom.Pt
+	x            geom.Pt
+	y            geom.Pt
+	image        *glutil.Image
+	color        color.Color
 }
 
-type tiles [columns * rows]tile
+func (t *tile) Draw(sz size.Event) {
+
+	draw.Draw(t.image.RGBA, t.image.RGBA.Bounds(), &image.Uniform{t.color}, image.Point{}, draw.Src)
+
+	t.image.Upload()
+
+	t.image.Draw(
+		sz,
+		geom.Point{t.columnOffset + t.x, t.rowOffset + t.y},
+		geom.Point{t.columnOffset + (t.x + tileSize), t.rowOffset + t.y},
+		geom.Point{t.columnOffset + t.x, t.rowOffset + (t.y + tileSize)},
+		t.image.RGBA.Bounds(),
+	)
+
+}
+
+type tiles [gridColumnsCount * gridrowsCount]tile
 
 var (
 	images *glutil.Images
 	grid   tiles
 )
 
-func onStart(glctx gl.Context) {
+func onStart(glctx gl.Context, sz size.Event) {
 	images = glutil.NewImages(glctx)
+
+	colors := []color.RGBA{
+		{52, 152, 219, 1},
+		{231, 76, 60, 1},
+		{52, 73, 94, 1},
+		{46, 204, 113, 1},
+	}
+
+	for c := 0; c < gridColumnsCount; c++ {
+		for r := 0; r < gridrowsCount; r++ {
+			t := &grid[((c+1)*(r+1))-1]
+			t.image = images.NewImage(int(sz.PixelsPerPt*tileSize), int(sz.PixelsPerPt*tileSize))
+			t.color = colors[random(0, 4)]
+		}
+	}
 }
 
 func onStop(glctx gl.Context) {
@@ -48,26 +84,20 @@ func onPaint(glctx gl.Context, sz size.Event) {
 	glctx.ClearColor(236, 240, 241, 1)
 	glctx.Clear(gl.COLOR_BUFFER_BIT)
 
-	columnOffset := (sz.WidthPt / 2) - ((geom.Pt(columns) * tileSize) / 2)
-	rowOffset := (sz.HeightPt / 2) - ((geom.Pt(rows) * tileSize) / 2)
+	columnOffset := (sz.WidthPt / 2) - ((geom.Pt(gridColumnsCount) * tileSize) / 2)
+	rowOffset := (sz.HeightPt / 2) - ((geom.Pt(gridrowsCount) * tileSize) / 2)
 
-	for c := 0; c < columns; c++ {
+	for c := 0; c < gridColumnsCount; c++ {
 
-		for r := 0; r < rows; r++ {
+		for r := 0; r < gridrowsCount; r++ {
 
-			m := images.NewImage(int(sz.PixelsPerPt*tileSize), int(sz.PixelsPerPt*tileSize))
+			t := &grid[((c+1)*(r+1))-1]
 
-			draw.Draw(m.RGBA, m.RGBA.Bounds(), &image.Uniform{grid[((c+1)*(r+1))-1].color}, image.Point{}, draw.Src)
-
-			m.Upload()
-
-			m.Draw(
-				sz,
-				geom.Point{columnOffset + (geom.Pt(c) * tileSize), rowOffset + (geom.Pt(r) * tileSize)},
-				geom.Point{columnOffset + ((geom.Pt(c) * tileSize) + tileSize), rowOffset + (geom.Pt(r) * tileSize)},
-				geom.Point{columnOffset + (geom.Pt(c) * tileSize), rowOffset + ((geom.Pt(r) * tileSize) + tileSize)},
-				m.RGBA.Bounds(),
-			)
+			t.columnOffset = columnOffset
+			t.rowOffset = rowOffset
+			t.x = geom.Pt(c) * tileSize
+			t.y = geom.Pt(r) * tileSize
+			t.Draw(sz)
 
 		}
 
@@ -78,19 +108,6 @@ func onPaint(glctx gl.Context, sz size.Event) {
 func main() {
 
 	log.Println("starting the app")
-
-	colors := []color.RGBA{
-		{52, 152, 219, 1},
-		{231, 76, 60, 1},
-		{52, 73, 94, 1},
-		{46, 204, 113, 1},
-	}
-
-	for c := 0; c < columns; c++ {
-		for r := 0; r < rows; r++ {
-			grid[((c+1)*(r+1))-1].color = colors[random(0, 4)]
-		}
-	}
 
 	app.Main(func(a app.App) {
 
@@ -105,7 +122,7 @@ func main() {
 				case lifecycle.CrossOn:
 					visible = true
 					glctx, _ = e.DrawContext.(gl.Context)
-					onStart(glctx)
+					onStart(glctx, sz)
 				case lifecycle.CrossOff:
 					visible = false
 					onStop(glctx)
